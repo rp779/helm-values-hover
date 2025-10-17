@@ -8,7 +8,7 @@
   "displayName": "Helm Values Explorer",
   "description": "Explore and preview Helm values across multiple environment files directly in your templates",
   "icon": "images/icon.png",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "engines": {
     "vscode": "^1.74.0"
   },
