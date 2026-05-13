@@ -2,6 +2,26 @@
 
 All notable changes to the "Helm Values Explorer" extension will be documented in this file.
 
+## [0.1.0] - 2026-05-03
+### Added
+- Dedicated `Helm Values Explorer` output channel and `helmValuesExplorer.logLevel` setting (`off`/`error`/`warn`/`info`/`debug`).
+- Activation for `helm`, `helm-template`, `gotmpl`, and `tpl` languages and for workspaces containing `Chart.yaml`.
+- Chart-aware values-file discovery: searches the chart root (located via `Chart.yaml`) and every subchart under `charts/`.
+- Subtree hover: hovering on a parent path renders the entire YAML subtree.
+- Detection of `.Values` references inside `if` / `with` / `range`, function arguments, parenthesized expressions, multi-pipe chains, whitespace-trim markers, and `$.Values.*` root-context references.
+- Unit and integration tests for parser, values index, chart model, hover, definition, and completion providers.
+
+### Changed
+- Rewrote the extension around modular files under `src/helm`, `src/providers`, and `src/util`.
+- Replaced regex-based template scanning with a tokenizer that respects string literals and Go-template comments.
+- Switched the YAML parser from `js-yaml` to the `yaml` package to get AST positions and accurate Go-to-Definition.
+- Hover UI: removed emoji decoration; now displays the resolved path in bold, the original expression, and one fenced code block per matching values file.
+- Cache is keyed by absolute file path (was basename) and uses `RelativePattern`-based file watchers.
+
+### Removed
+- The hand-rolled `findYamlKeyLocation` indentation walker.
+- `console.log` usage throughout the codebase.
+
 ## [0.0.7] - 2025-01-XX
 ### Added
 - **Go to Definition Support**: Ctrl+Click on any `{{ .Values.* }}` expression to jump directly to its definition in the relevant values file(s)

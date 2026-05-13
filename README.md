@@ -9,14 +9,15 @@ A Visual Studio Code extension that enhances your Helm chart development workflo
 
 ## Features
 
-- **Smart Value Preview**: Hover over any `{{ .Values.* }}` expression to instantly see values from all matching files
-- **Advanced Expression Support**: Works with complex Helm expressions including pipes, functions, and filters
-- **Intelligent Autocomplete**: Get context-aware suggestions when typing `.Values` paths
-- **Go to Definition**: Navigate directly to value definitions across multiple files
-- **Multi-Environment Support**: View values from multiple files (values.yaml, dev-values.yaml, prod-values.yaml, etc.)
-- **Automatic File Detection**: Finds values files in current and parent directories with configurable patterns
-- **Zero Configuration**: Works out of the box with any Helm chart structure
-- **Performance Optimized**: Smart caching with file watching for fast response times
+- **Smart value preview**: Hover any `{{ .Values.* }}` reference to see its value from every values file in the chart.
+- **Subtree hover**: Hovering on an intermediate key like `{{ .Values.image }}` renders the full subtree as YAML — no more "Value Not Found".
+- **Full Go-template coverage**: Detects `.Values` references inside `if`, `with`, `range`, function calls (`printf ... .Values.x`), parenthesized expressions (`(eq .Values.env "prod")`), multi-pipe (`.Values.x | default "y" | quote`), and root-context references (`$.Values.x` inside `range`/`with`).
+- **Accurate Go-to-Definition**: Uses the YAML AST (via the `yaml` package) to jump to the exact key position in every values file that defines the path.
+- **Intelligent autocomplete**: Suggests both leaf keys and parent objects when typing `.Values` paths.
+- **Chart-aware discovery**: Locates the chart root via `Chart.yaml` and searches the chart root plus every subchart under `charts/`. Falls back to walking ancestor directories when no `Chart.yaml` is present.
+- **Multi-language activation**: Activates on `yaml`, `helm`, `helm-template`, `gotmpl`, and `tpl` documents — works even when your template files are registered to a Helm language extension.
+- **Performance**: AST-cached per file, keyed by absolute path, with `RelativePattern`-based file watching to invalidate on change.
+- **Diagnostic output channel**: Logging is routed to a dedicated "Helm Values Explorer" output channel with a configurable verbosity (`helmValuesExplorer.logLevel`).
 
 ## Installation
 
@@ -54,12 +55,13 @@ mychart/
 
 This extension contributes the following settings:
 
-* `helmValuesExplorer.valueFiles`: Patterns to match Helm values files (default: `["values.yaml", "*values.yaml", "values.*.yaml"]`)
-* `helmValuesExplorer.showFileNames`: Show source file names in hover preview (default: `true`)
+* `helmValuesExplorer.valueFiles`: Glob patterns for values files (default: `["values.yaml", "*values.yaml", "values.*.yaml"]`). Patterns are evaluated against the chart root and every subchart directory under `charts/`.
+* `helmValuesExplorer.showFileNames`: Show the source file name above each value in hover output (default: `true`).
+* `helmValuesExplorer.logLevel`: Verbosity for the "Helm Values Explorer" output channel. One of `off`, `error`, `warn`, `info`, `debug` (default: `info`).
 
 ## Contributing
 
-Contributions are welcome! Here's how you can help:
+Contributions are welcome. Here's how you can help:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -72,6 +74,17 @@ Contributions are welcome! Here's how you can help:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Release Notes
+### 0.1.0 (2026-05-03)
+- **Reliable hover detection**: Rewrote the template parser as a tokenizer that respects strings and comments. Hover, Go-to-Definition, and completion now work inside `if`, `with`, `range`, function arguments, parenthesized expressions, multi-pipe chains, whitespace-trim markers (`{{- ... -}}`), and `$.Values.*` root-context references.
+- **Subtree hover**: Hovering on a parent path (e.g. `.Values.image`) now renders the full YAML subtree instead of "Value Not Found".
+- **Cleaner hover UI**: Removed emoji clutter. Hover now shows the resolved path in bold, the original expression, and one fenced code block per matching values file.
+- **AST-backed Go-to-Definition**: Uses the `yaml` package AST to find the exact line and column of each key in each values file, replacing the previous indentation-based heuristic.
+- **Chart-aware discovery**: Finds the chart root via `Chart.yaml` and indexes the chart root plus every subchart under `charts/`. Falls back to ancestor walking when no chart manifest is present.
+- **Broader activation**: Now activates on `helm`, `helm-template`, `gotmpl`, and `tpl` documents (in addition to `yaml`), plus workspaces that contain a `Chart.yaml`.
+- **Dedicated output channel**: All logging is routed through a "Helm Values Explorer" output channel with a configurable `helmValuesExplorer.logLevel` setting. No more noise in the developer console.
+- **Cache correctness**: Cache is now keyed by absolute file path (previously basename), eliminating collisions between identically named values files in different chart directories.
+- **Tests**: Added 50 unit and integration tests covering the parser, values index, chart model, and all three providers.
+
 ### 0.0.7 (2025-01-XX)
 - **Enhanced Pattern Matching**: Support for complex Helm expressions with pipes, functions, and filters (e.g., `{{ .Values.port | default 8080 }}`)
 - **Improved Hover Detection**: Hover works anywhere within `{{ }}` expressions, not just on specific words

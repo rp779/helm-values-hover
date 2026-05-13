@@ -1,15 +1,16 @@
 import * as assert from 'assert';
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
 import * as vscode from 'vscode';
-// import * as myExtension from '../../extension';
 
-suite('Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Start all tests.');
+suite('Extension activation', () => {
+    test('extension is registered with the expected id', () => {
+        const ext = vscode.extensions.getExtension('rossp.helm-values-explorer');
+        assert.ok(ext, 'expected rossp.helm-values-explorer to be installed');
+    });
 
-	test('Sample test', () => {
-		assert.strictEqual(-1, [1, 2, 3].indexOf(5));
-		assert.strictEqual(-1, [1, 2, 3].indexOf(0));
-	});
+    test('configuration contributes the expected keys', () => {
+        const config = vscode.workspace.getConfiguration('helmValuesExplorer');
+        assert.notStrictEqual(config.inspect('valueFiles'), undefined);
+        assert.notStrictEqual(config.inspect('showFileNames'), undefined);
+        assert.notStrictEqual(config.inspect('logLevel'), undefined);
+    });
 });

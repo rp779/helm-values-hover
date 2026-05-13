@@ -8,7 +8,7 @@
   "displayName": "Helm Values Explorer",
   "description": "Explore and preview Helm values across multiple environment files directly in your templates",
   "icon": "images/icon.png",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -16,12 +16,19 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "onLanguage:yaml"
+    "onLanguage:yaml",
+    "onLanguage:helm",
+    "onLanguage:helm-template",
+    "onLanguage:gotmpl",
+    "onLanguage:tpl",
+    "workspaceContains:**/Chart.yaml",
+    "workspaceContains:**/templates/**/*.yaml",
+    "workspaceContains:**/templates/**/*.tpl"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Helm Values Hover",
+      "title": "Helm Values Explorer",
       "properties": {
         "helmValuesExplorer.valueFiles": {
           "type": "array",
@@ -30,7 +37,7 @@
             "*values.yaml",
             "values.*.yaml"
           ],
-          "description": "Patterns to match Helm values files. Supports glob patterns.",
+          "description": "Patterns to match Helm values files. Supports glob patterns. Files are searched in the chart root (where Chart.yaml lives) and in every subchart under charts/.",
           "items": {
             "type": "string"
           }
@@ -38,7 +45,19 @@
         "helmValuesExplorer.showFileNames": {
           "type": "boolean",
           "default": true,
-          "description": "Show which values file each value comes from"
+          "description": "Show which values file each value comes from in hover and completion."
+        },
+        "helmValuesExplorer.logLevel": {
+          "type": "string",
+          "default": "info",
+          "enum": [
+            "off",
+            "error",
+            "warn",
+            "info",
+            "debug"
+          ],
+          "description": "Verbosity for the 'Helm Values Explorer' output channel."
         }
       }
     }
@@ -70,8 +89,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@types/js-yaml": "^4.0.9",
     "fast-glob": "^3.3.3",
-    "js-yaml": "^4.1.0"
+    "yaml": "^2.8.4"
   }
 }
